@@ -20,7 +20,7 @@
               <option>{{hotel.name}}</option>
             {% endfor %} -->
             </select>
-            <button data-action="add" class="btn btn-primary btn-circle pull-right">+</button>
+            <button data-action="add" id="add-hotel" class="btn btn-primary btn-circle pull-right">+</button>
           </div>
           <div>
             <h4>Restaurants</h4>
@@ -29,7 +29,7 @@
               <option>{{restaurant.name}}</option>
             {% endfor %} -->
             </select>
-            <button data-action="add" class="btn btn-primary btn-circle pull-right">+</button>
+            <button data-action="add" id="add-restaurant" class="btn btn-primary btn-circle pull-right">+</button>
           </div>
           <div>
             <h4>Activities</h4>
@@ -38,7 +38,7 @@
               <option>{{activity.name}}</option>
             {% endfor %} -->
             </select>
-            <button data-action="add" class="btn btn-primary btn-circle pull-right">+</button>
+            <button data-action="add" id="add-activity" class="btn btn-primary btn-circle pull-right">+</button>
           </div>
         </div>
       </div>
@@ -60,29 +60,18 @@
         <div class="panel-body" id="itinerary">
           <div>
             <h4>My Hotel</h4>
-            <ul class="list-group">
-              <div class="itinerary-item">
-                <span class="title"></span>
-                <button class="btn btn-xs btn-danger remove btn-circle">x</button>
-              </div>
+            <ul class="list-group" id="hotel-itinerary">
+
             </ul>
           </div>
           <div>
             <h4>My Restaurants</h4>
-            <ul class="list-group">
-              <div class="itinerary-item">
-                <span class="title"></span>
-                <button class="btn btn-xs btn-danger remove btn-circle">x</button>
-              </div>
+            <ul class="list-group" id="restaurant-itinerary">
             </ul>
           </div>
           <div>
             <h4>My Activities</h4>
-            <ul class="list-group">
-              <div class="itinerary-item">
-                <span class="title"></span></span>
-                <button class="btn btn-xs btn-danger remove btn-circle">x</button>
-              </div>
+            <ul class="list-group" id="activity-itinerary">
             </ul>
           </div>
         </div>
