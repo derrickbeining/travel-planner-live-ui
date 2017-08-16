@@ -93,16 +93,16 @@ $(function initializeMap() {
 
   // MODELS ////////////////////////////////////////////////////
 
-  const itineraryByDay = [
-    {
-      hotel: undefined,
-      restaurant: [],
-      activity: []
-    }
-  ];
-  let currentDay = 0;
+
+  const dayModel = {
+    hotel: undefined,
+    restuarant: [],
+    activity: []
+  }
+  const itineraryByDay = [dayModel];
+
+  let currentDay = 1;
   // const model = {
-  //   type: 'hotel',
   //   name: 'whatevs',
   //   placeId: 4,
   //   coords: [],
@@ -110,6 +110,11 @@ $(function initializeMap() {
   // }
 
   // UTILITIES ////////////////////////////////////////////////////
+  // adds day model to itinerary by day array
+    function addNewDayInstance (){
+      itineraryByDay.push(dayModel);
+      return itineraryByDay.length;
+    }
 
   // loads dummy data into select/options lists
   function createOptionsList(DOMParent, arrOfPlaces, placeType) {
@@ -127,11 +132,11 @@ $(function initializeMap() {
 
   function makeItineraryItem(type, name, id) {
     return `<div  id="${type}${id}" class="itinerary-item">
-        <span class="title" data-place-id="${id}" data-place-type="${type}">${name}</span><button class="btn btn-xs btn-danger remove btn-circle" data-target-type="${type}" data-target-id="${id}" data-target="#${type}${id}">x</button> </div>`;
+        <span class="title" data-place-id="${id}" data-place-type="${type}">${name}</span><button class="btn btn-xs btn-danger remove btn-circle" data-target="#${type}${id}">x</button> </div>`;
   }
 
   function addItemToItinerary(selection) {
-    const currentDayModel = itineraryByDay[currentDay];
+    const currentDay = itineraryByDay[currentDay];
     const { placeId, placeType } = selection[0].selectedOptions[0].dataset;
     const coords = places[placeType].find(place => {
       return place.id === Number(placeId);
@@ -144,16 +149,16 @@ $(function initializeMap() {
       mapMarker: mapMarker
     };
 
-    if (!currentDayModel[placeType]) {
+    if (!currentDay[placeType]) {
       //TODO: complete this
       if (placeType !== "hotel") {
-        currentDayModel[placeType] = [itineraryItem];
+        currentDay[placeType] = [itineraryItem];
       } else {
-        currentDayModel[placeType] = itineraryItem;
+        currentDay[placetype] = itineraryItem;
       }
-    } else if (Array.isArray(currentDayModel[placeType])) {
-      if (currentDayModel[placeType].length >= 3) return;
-      else currentDayModel[placeType].push(itineraryItem);
+    } else if (Array.isArray(currentDay[placeType])) {
+      if (currentDay[placeType].length >= 3) return;
+      else currentDay[placeType].push(itineraryItem);
     } else {
       return;
     }
@@ -170,35 +175,50 @@ $(function initializeMap() {
   // add place to map and itinerary panel when "+" is clicked
   $optionsPanel.on("click", "button", event => {
     const dataSource = $(event.target.dataset.source);
-    // const dataTarget = $(event.target.dataset.target);
-    // const { placeId, placeType } = dataSource[0].selectedOptions[0].dataset;
-    // const location = places[placeType].find(place => {
-    //   return place.id === Number(placeId);
-    // }).place.location;
-    // drawMarker(placeType, location);
-    // dataTarget.append(
-    //   makeItineraryItem(placeType, dataSource.val(), placeId, location)
-    // );
-    addItemToItinerary(dataSource);
+    const dataTarget = $(event.target.dataset.target);
+    const { placeId, placeType } = dataSource[0].selectedOptions[0].dataset;
+    const location = places[placeType].find(place => {
+      return place.id === Number(placeId);
+    }).place.location;
+    drawMarker(placeType, location);
+    dataTarget.append(
+      makeItineraryItem(placeType, dataSource.val(), placeId, location)
+    );
   });
 
   // remove itinerary item
   $("#itinerary-panel").on("click", "button", event => {
-    const { targetType, targetId } = event.target.dataset;
-    const currentDayModel = itineraryByDay[currentDay];
-    if (targetType === "hotel") {
-      currentDayModel[targetType].mapMarker.setMap(null);
-      currentDayModel[targetType] = undefined;
-    } else {
-      console.log("Before splice: ", itineraryByDay[currentDay]);
-      currentDayModel[targetType].forEach((place, idx, arr) => {
-        if (place.id === targetId) {
-          place.mapMarker.setMap(null);
-          arr.splice(idx, 1);
-          console.log("After splice: ", itineraryByDay[currentDay]);
-        }
-      });
-    }
-    $(event.target.dataset.target).remove(); // remove from ui panel
+    $(event.target.dataset.target).remove();
   });
+
+
+
+
+
+  function makeNewDayButton(dayNumber) {
+    return `<button class="btn btn-circle day-btn current-day">${dayNumber}</button> `
+  }
+
+  $('#plus-button').on("click", function (event) {
+    $('#day-buttons').append(makeNewDayButton(addNewDayInstance()));
+  })
+
+  $('#day-buttons').on("click", function(event){
+    currentDay = Number.parseInt(event.target.innerText) - 1
+    // console.log(event.target)
+    const currentDayModel = itineraryByDay[currentDay]
+    const hotel = currentDayModel.hotel;
+    const restaurant = currentDayModel.restuarant;
+    const activity = currentDayModel.activity;
+    // const {hotel, restaurant, activity} = currentDayModel
+    if (hotel) {
+      $('#hotel-itinerary').append(makeItineraryItem("hotel", hotel.name, hotel.id))
+    }
+    restaurant.forEach(function(restaurant){
+      $('#restaurant-itinerary').append(makeItineraryItem("restaurant", restaurant.name, restaurant.id))
+    })
+    activity.forEach(function(activity){
+      $('#activity-itinerary').append(makeItineraryItem("activity", activity.name, activity.id))
+    })
+  })
 });
