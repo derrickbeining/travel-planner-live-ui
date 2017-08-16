@@ -59,10 +59,10 @@ $(function initializeMap() {
     var iconURL = iconURLs[type];
     var marker = new google.maps.Marker({
       icon: iconURL,
-      position: latLng,
+      position: latLng
     });
     marker.setMap(currentMap);
-    return marker
+    return marker;
   }
 
   // drawMarker('hotel', [40.705137, -74.007624])
@@ -72,15 +72,14 @@ $(function initializeMap() {
   ////////////////////////////////////////////////////////////////////
   // UI CODE HERE /////////////////////////////////////////////////////
 
-
   // DATA ///////////////////////////////////////
 
-  const $optionsPanel =  $("#options-panel")
+  const $optionsPanel = $("#options-panel");
   const $hotelsDropdown = $("#hotel-choices");
   const $restaurantsDropdown = $("#restaurant-choices");
   const $activitiesDropdown = $("#activity-choices");
-  const $itineraryPanel = $('#itinerary-panel')
-  const $dayButtons = $('#day-buttons')
+  const $itineraryPanel = $("#itinerary-panel");
+  const $dayButtons = $("#day-buttons");
   const $places = {
     $hotels: $hotelsDropdown,
     $restaurants: $restaurantsDropdown,
@@ -90,39 +89,81 @@ $(function initializeMap() {
     hotel: hotels,
     restaurant: restaurants,
     activity: activities
-  }
-
-
-
+  };
 
   // MODELS ////////////////////////////////////////////////////
 
-  const iteneraryByDay = [ {} ]; //
+  const itineraryByDay = [
+    {
+      hotel: undefined,
+      restuarant: [],
+      activity: []
+    }
+  ];
+  let currentDay = 1;
+  // const model = {
+  //   type: 'hotel',
+  //   name: 'whatevs',
+  //   placeId: 4,
+  //   coords: [],
+  //   mapMarker: <markerRef>,
+  // }
 
   // UTILITIES ////////////////////////////////////////////////////
 
-  // loads dummy data into <select> <options> lists
+  // loads dummy data into select/options lists
   function createOptionsList(DOMParent, arrOfPlaces, placeType) {
     arrOfPlaces.forEach(place => {
       const html = `<option data-place-id="${place.id}" data-place-type="${placeType}" data-place-location="${place
         .place.location}">${place.name}</option>`;
-        DOMParent.append(html);
-      });
-    }
+      DOMParent.append(html);
+    });
+  }
 
-    // setup
-    createOptionsList($hotelsDropdown, hotels, "hotel");
-    createOptionsList($restaurantsDropdown, restaurants, "restaurant");
-    createOptionsList($activitiesDropdown, activities, "activity");
+  // setup
+  createOptionsList($hotelsDropdown, hotels, "hotel");
+  createOptionsList($restaurantsDropdown, restaurants, "restaurant");
+  createOptionsList($activitiesDropdown, activities, "activity");
 
-  function makeItineraryItem(type, name, id, location) {
-    return `<div  id="${type}${id}"  class="itinerary-item">
+  function makeItineraryItem(type, name, id) {
+    return `<div  id="${type}${id}" class="itinerary-item">
         <span class="title" data-place-id="${id}" data-place-type="${type}">${name}</span><button class="btn btn-xs btn-danger remove btn-circle" data-target="#${type}${id}">x</button> </div>`;
   }
 
-  function addItemToItenerary (type, name, id, location, mapMarker) {
-     iteneraryByDay[ iteneraryByDay.length ]
+  function addItemToItenerary(selection) {
+    const currentDay = itineraryByDay[currentDay];
+    const { placeId, placeType } = selection[0].selectedOptions[0].dataset;
+    const coords = places[placeType].find(place => {
+      return place.id === Number(placeId);
+    }).place.location;
+    const mapMarker = drawMarker(placeType, coords);
+    const itineraryItem = {
+      id: placeId,
+      name: selection.val(),
+      coordinates: coords,
+      mapMarker: mapMarker
+    };
+
+    if (!currentDay[placeType]) {
+      //TODO: complete this
+      if (placeType !== "hotel") {
+        currentDay[placeType] = [itineraryItem];
+      } else {
+        currentDay[placetype] = itineraryItem;
+      }
+    } else if (Array.isArray(currentDay[placeType])) {
+      if (currentDay[placeType].length >= 3) return;
+      else currentDay[placeType].push(itineraryItem);
+    } else {
+      return;
+    }
+
+    $(`#${placeType}-itinerary`).append(
+      makeItineraryItem(placeType, selection.val(), placeId)
+    );
   }
+
+  function updateCurrentDay() {}
 
   // EVENT HANDLING ///////////////////////////////////////////
 
@@ -131,18 +172,17 @@ $(function initializeMap() {
     const dataSource = $(event.target.dataset.source);
     const dataTarget = $(event.target.dataset.target);
     const { placeId, placeType } = dataSource[0].selectedOptions[0].dataset;
-    const location = places[ placeType ].find(place => {
-      return place.id === Number(placeId)
-    }).place.location
+    const location = places[placeType].find(place => {
+      return place.id === Number(placeId);
+    }).place.location;
     drawMarker(placeType, location);
-    dataTarget.append(makeItineraryItem(placeType, dataSource.val(), placeId, location)
+    dataTarget.append(
+      makeItineraryItem(placeType, dataSource.val(), placeId, location)
     );
   });
 
   // remove itinerary item
   $("#itinerary-panel").on("click", "button", event => {
-    $(event.target.dataset.target).remove()
+    $(event.target.dataset.target).remove();
   });
-
-
 });
